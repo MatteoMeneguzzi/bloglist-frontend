@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import Blog from './components/Blog';
+import BlogForm from './components/BlogForm';
 import blogService from './services/blogs';
 import loginService from './services/login';
 import LoginForm from './components/LoginForm';
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
+  const [title, setTitle] = useState([]);
+  const [author, setAuthor] = useState([]);
+  const [url, setUrl] = useState([]);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
@@ -19,7 +23,7 @@ const App = () => {
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
       setUser(user);
-      // noteService.setToken(user.token)
+      blogService.setToken(user.token);
     }
   }, []);
 
@@ -31,7 +35,7 @@ const App = () => {
         password,
       });
       window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user));
-
+      blogService.setToken(user.token);
       setUser(user);
       setUsername('');
       setPassword('');
@@ -44,12 +48,31 @@ const App = () => {
     event.preventDefault();
     try {
       window.localStorage.removeItem('loggedBlogappUser');
+      blogService.setToken('');
       setUser(null);
       setUsername('');
       setPassword('');
     } catch (exception) {
       console.log(exception.message);
     }
+  };
+
+  const addBlog = (event) => {
+    event.preventDefault();
+
+    const blogObject = {
+      title,
+      author,
+      url,
+      id: blogs.length + 1,
+    };
+
+    blogService.create(blogObject).then((returnedBlog) => {
+      setBlogs(blogs.concat(returnedBlog));
+      setTitle('');
+      setAuthor('');
+      setUrl('');
+    });
   };
 
   return (
@@ -70,11 +93,15 @@ const App = () => {
             <button onClick={handleLogOut}>Log out</button>
           </p>
 
-          {/* <NoteForm
-            addNote={addNote}
-            newNote={newNote}
-            handleNoteChange={handleNoteChange}
-          /> */}
+          <BlogForm
+            title={title}
+            author={author}
+            url={url}
+            setTitle={setTitle}
+            setAuthor={setAuthor}
+            setUrl={setUrl}
+            addBlog={addBlog}
+          />
         </div>
       )}
       <h2>blogs</h2>
