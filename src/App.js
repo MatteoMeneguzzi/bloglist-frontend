@@ -1,24 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Blog from './components/Blog';
 import BlogForm from './components/BlogForm';
 import blogService from './services/blogs';
 import loginService from './services/login';
 import LoginForm from './components/LoginForm';
+import Togglable from './components/Togglable';
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
-  const [title, setTitle] = useState([]);
-  const [author, setAuthor] = useState([]);
-  const [url, setUrl] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
-  const [loginVisible, setLoginVisible] = useState(null);
 
-  const hideWhenVisible = { display: loginVisible ? 'none' : '' };
-  const showWhenVisible = { display: loginVisible ? '' : 'none' };
+  const blogFormRef = useRef();
 
   useEffect(() => {
     blogService.getAll().then((blogs) => setBlogs(blogs));
@@ -40,9 +36,9 @@ const App = () => {
         username,
         password,
       });
+      setUser(user);
       window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user));
       blogService.setToken(user.token);
-      setUser(user);
       setUsername('');
       setPassword('');
       setSuccessMessage(`${user.name} successfully logged in`);
@@ -67,24 +63,13 @@ const App = () => {
     }
   };
 
-  const addBlog = (event) => {
-    event.preventDefault();
-
-    const blogObject = {
-      title,
-      author,
-      url,
-      id: blogs.length + 1,
-    };
-
+  const createBlog = (blog) => {
+    blogFormRef.current.toggleVisibility();
     blogService
-      .create(blogObject)
+      .create(blog)
       .then((returnedBlog) => {
         setBlogs(blogs.concat(returnedBlog));
-        setTitle('');
-        setAuthor('');
-        setUrl('');
-        setSuccessMessage(`a new blog ${title} by ${author} added`);
+        setSuccessMessage(`a new blog has been added`);
         setTimeout(() => setSuccessMessage(''), 3000);
       })
       .catch((err) => {
@@ -98,7 +83,7 @@ const App = () => {
       {user === null ? (
         <>
           <h2>log in to application</h2>
-          {errorMessage.length > 2 ? (
+          {errorMessage.length > 2 && (
             <p
               style={{
                 color: 'red',
@@ -112,8 +97,8 @@ const App = () => {
             >
               {errorMessage}
             </p>
-          ) : null}
-          {successMessage.length > 2 ? (
+          )}
+          {successMessage.length > 2 && (
             <p
               style={{
                 color: 'green',
@@ -127,18 +112,19 @@ const App = () => {
             >
               {successMessage}
             </p>
-          ) : null}
+          )}
+
           <LoginForm
             username={username}
             password={password}
             handleLogin={handleLogin}
-            setPassword={setPassword}
-            setUsername={setUsername}
+            setPassword={({ target }) => setPassword(target.value)}
+            setUsername={({ target }) => setUsername(target.value)}
           />
         </>
       ) : (
         <div>
-          {errorMessage.length > 2 ? (
+          {errorMessage.length > 2 && (
             <p
               style={{
                 color: 'red',
@@ -152,8 +138,8 @@ const App = () => {
             >
               {errorMessage}
             </p>
-          ) : null}
-          {successMessage.length > 2 ? (
+          )}
+          {successMessage.length > 2 && (
             <p
               style={{
                 color: 'green',
@@ -167,35 +153,18 @@ const App = () => {
             >
               {successMessage}
             </p>
-          ) : null}
+          )}
           <p>
             {user.name} logged in{' '}
             <button onClick={handleLogOut}>Log out</button>
           </p>
 
-          <p style={hideWhenVisible}>
-            <button onClick={() => setLoginVisible(true)}>
-              create new blog
-            </button>
-          </p>
-
-          <div style={showWhenVisible}>
-            <h2>create new blog</h2>
-            <BlogForm
-              title={title}
-              author={author}
-              url={url}
-              setTitle={setTitle}
-              setAuthor={setAuthor}
-              setUrl={setUrl}
-              addBlog={addBlog}
-            />
-            <p>
-              <button onClick={() => setLoginVisible(false)}>CANCEL</button>
-            </p>
-          </div>
+          <Togglable buttonLabel={'new blog'} ref={blogFormRef}>
+            <BlogForm createBlog={createBlog} />
+          </Togglable>
         </div>
       )}
+
       <h2>blogs</h2>
       {blogs.map((blog) => (
         <Blog key={blog.id} blog={blog} />
