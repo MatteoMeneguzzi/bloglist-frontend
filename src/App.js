@@ -10,8 +10,8 @@ const App = () => {
   const [title, setTitle] = useState([]);
   const [author, setAuthor] = useState([]);
   const [url, setUrl] = useState([]);
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
