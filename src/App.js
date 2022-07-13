@@ -14,6 +14,15 @@ const App = () => {
     blogService.getAll().then((blogs) => setBlogs(blogs));
   }, []);
 
+  useEffect(() => {
+    const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser');
+    if (loggedUserJSON) {
+      const user = JSON.parse(loggedUserJSON);
+      setUser(user);
+      // noteService.setToken(user.token)
+    }
+  }, []);
+
   const handleLogin = async (event) => {
     event.preventDefault();
     try {
@@ -21,11 +30,25 @@ const App = () => {
         username,
         password,
       });
+      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user));
+
       setUser(user);
       setUsername('');
       setPassword('');
     } catch (error) {
       console.log(error.message);
+    }
+  };
+
+  const handleLogOut = async (event) => {
+    event.preventDefault();
+    try {
+      window.localStorage.removeItem('loggedBlogappUser');
+      setUser(null);
+      setUsername('');
+      setPassword('');
+    } catch (exception) {
+      console.log(exception.message);
     }
   };
 
@@ -44,7 +67,7 @@ const App = () => {
         <div>
           <p>
             {user.name} logged in{' '}
-            {/* <button onClick={handleLogOut}>Log out</button> */}
+            <button onClick={handleLogOut}>Log out</button>
           </p>
 
           {/* <NoteForm
