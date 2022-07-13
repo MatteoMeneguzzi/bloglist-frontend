@@ -15,6 +15,10 @@ const App = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
+  const [loginVisible, setLoginVisible] = useState(null);
+
+  const hideWhenVisible = { display: loginVisible ? 'none' : '' };
+  const showWhenVisible = { display: loginVisible ? '' : 'none' };
 
   useEffect(() => {
     blogService.getAll().then((blogs) => setBlogs(blogs));
@@ -168,16 +172,28 @@ const App = () => {
             {user.name} logged in{' '}
             <button onClick={handleLogOut}>Log out</button>
           </p>
-          <h2>create new blog</h2>
-          <BlogForm
-            title={title}
-            author={author}
-            url={url}
-            setTitle={setTitle}
-            setAuthor={setAuthor}
-            setUrl={setUrl}
-            addBlog={addBlog}
-          />
+
+          <p style={hideWhenVisible}>
+            <button onClick={() => setLoginVisible(true)}>
+              create new blog
+            </button>
+          </p>
+
+          <div style={showWhenVisible}>
+            <h2>create new blog</h2>
+            <BlogForm
+              title={title}
+              author={author}
+              url={url}
+              setTitle={setTitle}
+              setAuthor={setAuthor}
+              setUrl={setUrl}
+              addBlog={addBlog}
+            />
+            <p>
+              <button onClick={() => setLoginVisible(false)}>CANCEL</button>
+            </p>
+          </div>
         </div>
       )}
       <h2>blogs</h2>
