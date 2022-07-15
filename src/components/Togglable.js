@@ -3,27 +3,48 @@ import { useState, forwardRef, useImperativeHandle } from 'react';
 const Togglable = forwardRef((props, refs) => {
   const [visible, setVisible] = useState(false);
 
-  const hideWhenVisible = { display: visible ? 'none' : '' };
-  const showWhenVisible = { display: visible ? '' : 'none' };
-
-  const toggleVisibility = () => {
-    setVisible(!visible);
-  };
+  const hideWhenVisible = props.title
+    ? {
+        display: visible ? 'none' : '',
+        border: 'solid 1px',
+        borderColor: 'black',
+        marginBottom: 10,
+        padding: 5,
+      }
+    : {
+        display: visible ? 'none' : '',
+      };
+  const showWhenVisible = props.title
+    ? {
+        display: visible ? '' : 'none',
+        border: 'solid 1px',
+        borderColor: 'black',
+        marginBottom: 10,
+        padding: 5,
+      }
+    : {
+        display: visible ? '' : 'none',
+      };
 
   useImperativeHandle(refs, () => {
     return {
-      toggleVisibility,
+      setVisible,
     };
   });
 
   return (
     <div>
       <div style={hideWhenVisible}>
-        <button onClick={toggleVisibility}>{props.buttonLabel}</button>
+        {props.title} {props.author}{' '}
+        <button onClick={() => setVisible(!visible)}>
+          {props.buttonLabel}
+        </button>
       </div>
       <div style={showWhenVisible}>
         {props.children}
-        <button onClick={toggleVisibility}>cancel</button>
+        {props.title ? null : (
+          <button onClick={() => setVisible(!visible)}>cancel</button>
+        )}
       </div>
     </div>
   );

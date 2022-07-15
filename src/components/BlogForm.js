@@ -1,18 +1,23 @@
 import { useState } from 'react';
 
-const BlogForm = ({ createBlog }) => {
+const BlogForm = ({ blogs, createBlog }) => {
   const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
   const [url, setUrl] = useState('');
+  const [author, setAuthor] = useState('');
 
   const addBlog = (event) => {
     event.preventDefault();
+    const blogObject = {
+      title,
+      author,
+      url,
+      id: blogs.length + 1,
+    };
 
-    createBlog({ title, author, url });
-
+    createBlog(blogObject);
     setTitle('');
-    setAuthor('');
     setUrl('');
+    setAuthor('');
   };
 
   return (

@@ -16,8 +16,14 @@ const App = () => {
 
   const blogFormRef = useRef();
 
+  const blogDetailRef = useRef();
+
   useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs));
+    blogService.getAll().then((blogs) => {
+      const newBlogs = blogs.sort((a, b) => b.likes - a.likes);
+
+      setBlogs(newBlogs);
+    });
   }, []);
 
   useEffect(() => {
@@ -36,9 +42,9 @@ const App = () => {
         username,
         password,
       });
-      setUser(user);
       window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user));
       blogService.setToken(user.token);
+      setUser(user);
       setUsername('');
       setPassword('');
       setSuccessMessage(`${user.name} successfully logged in`);
@@ -64,12 +70,13 @@ const App = () => {
   };
 
   const createBlog = (blog) => {
-    blogFormRef.current.toggleVisibility();
+    blogFormRef.current.setVisible();
     blogService
       .create(blog)
       .then((returnedBlog) => {
-        setBlogs(blogs.concat(returnedBlog));
-        setSuccessMessage(`a new blog has been added`);
+        console.log(returnedBlog);
+        setBlogs(blogs.concat(returnedBlog).sort((a, b) => b.likes - a.likes));
+        setSuccessMessage(`a new blog was added`);
         setTimeout(() => setSuccessMessage(''), 3000);
       })
       .catch((err) => {
@@ -78,12 +85,52 @@ const App = () => {
       });
   };
 
+  const updateBlog = (blog) => {
+    blogService
+      .updateLikes(blog.id, blog)
+      .then((returnedBlog) => {
+        const newBlogs = blogs.map((item) =>
+          item.id !== blog.id ? item : blog
+        );
+        console.log(newBlogs);
+
+        const sortedBlogs = newBlogs.sort((a, b) => b.likes - a.likes);
+        setBlogs(sortedBlogs);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const deleteBlog = (blog) => {
+    console.log(blog);
+    if (window.confirm(`Do you really want to delete blog ${blog.title}`))
+      blogService.deleteBlog(blog.id);
+    const newBlogs = blogs.filter((item) => item.id !== blog.id);
+    setBlogs(newBlogs);
+  };
+  const loginForm = () => {
+    return (
+      <Togglable buttonLabel={'log in'}>
+        <LoginForm
+          username={username}
+          password={password}
+          handleLogin={handleLogin}
+          setPassword={({ target }) => setPassword(target.value)}
+          setUsername={({ target }) => setUsername(target.value)}
+        />
+      </Togglable>
+    );
+  };
+
+  console.log(user);
+
   return (
     <div>
       {user === null ? (
         <>
           <h2>log in to application</h2>
-          {errorMessage.length > 2 && (
+          {errorMessage.length > 2 ? (
             <p
               style={{
                 color: 'red',
@@ -97,8 +144,8 @@ const App = () => {
             >
               {errorMessage}
             </p>
-          )}
-          {successMessage.length > 2 && (
+          ) : null}
+          {successMessage.length > 2 ? (
             <p
               style={{
                 color: 'green',
@@ -112,19 +159,12 @@ const App = () => {
             >
               {successMessage}
             </p>
-          )}
-
-          <LoginForm
-            username={username}
-            password={password}
-            handleLogin={handleLogin}
-            setPassword={({ target }) => setPassword(target.value)}
-            setUsername={({ target }) => setUsername(target.value)}
-          />
+          ) : null}
+          {loginForm()}
         </>
       ) : (
         <div>
-          {errorMessage.length > 2 && (
+          {errorMessage.length > 2 ? (
             <p
               style={{
                 color: 'red',
@@ -138,8 +178,8 @@ const App = () => {
             >
               {errorMessage}
             </p>
-          )}
-          {successMessage.length > 2 && (
+          ) : null}
+          {successMessage.length > 2 ? (
             <p
               style={{
                 color: 'green',
@@ -153,21 +193,26 @@ const App = () => {
             >
               {successMessage}
             </p>
-          )}
+          ) : null}
           <p>
             {user.name} logged in{' '}
             <button onClick={handleLogOut}>Log out</button>
           </p>
-
-          <Togglable buttonLabel={'new blog'} ref={blogFormRef}>
-            <BlogForm createBlog={createBlog} />
+          <Togglable buttonLabel='create new blog' ref={blogFormRef}>
+            <h2>create new blog</h2>
+            <BlogForm createBlog={createBlog} blogs={blogs} />
           </Togglable>
         </div>
       )}
-
       <h2>blogs</h2>
       {blogs.map((blog) => (
-        <Blog key={blog.id} blog={blog} />
+        <Blog
+          key={blog.id}
+          blog={blog}
+          updateBlog={updateBlog}
+          deleteBlog={deleteBlog}
+          user={user}
+        />
       ))}
     </div>
   );
