@@ -46,6 +46,20 @@ describe('Blog app', function () {
       cy.get('#create-button').click();
       cy.contains('a blog created by cypress');
     });
+
+    it('a blog can be liked', function () {
+      cy.contains('create new blog').click();
+      cy.get('#title-input').type('a blog created by cypress');
+      cy.get('#author-input').type('Cypress');
+      cy.get('#url-input').type(
+        'https://docs.cypress.io/guides/overview/why-cypress'
+      );
+      cy.get('#create-button').click();
+      cy.contains('a blog created by cypress');
+      cy.contains('view').click();
+      cy.contains('like').click();
+      cy.contains('1').click();
+    });
   });
 
   describe('Login', function () {
