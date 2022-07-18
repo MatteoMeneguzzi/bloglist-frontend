@@ -127,7 +127,7 @@ const App = () => {
     <div>
       {user === null ? (
         <>
-          <h2>log in to application</h2>
+          <h2>login to application</h2>
           {errorMessage.length > 2 ? (
             <p
               style={{

@@ -15,23 +15,25 @@ const Blog = ({ blog, updateBlog, deleteBlog, user }) => {
   }
 
   return (
-    <Togglable
-      buttonLabel={'view'}
-      ref={blogDetailRef}
-      title={blog.title}
-      author={blog.author}
-    >
-      {blog.title} {blog.author}{' '}
-      <button onClick={toggleVisibility}>hide</button>
-      <div>{blog.url}</div>
-      <div>
-        likes {blog.likes} <button onClick={addLike}>like</button>
-      </div>
-      <div>{blog.user && blog.user.name}</div>
-      {blog.user && user.username === blog.user.username && (
-        <button onClick={() => deleteBlog(blog)}>remove</button>
-      )}
-    </Togglable>
+    <div className='blog'>
+      <Togglable
+        buttonLabel={'view'}
+        ref={blogDetailRef}
+        title={blog.title}
+        author={blog.author}
+      >
+        {blog.title} {blog.author}{' '}
+        <button onClick={toggleVisibility}>hide</button>
+        <div id='blog-url'>{blog.url}</div>
+        <div id='blog-likes'>
+          likes {blog.likes} <button onClick={addLike}>like</button>
+        </div>
+        <div>{blog.user ? blog.user.name : null}</div>
+        {blog.user && user?.username === blog.user.username && (
+          <button onClick={() => deleteBlog(blog)}>remove</button>
+        )}
+      </Togglable>
+    </div>
   )
 }
 
