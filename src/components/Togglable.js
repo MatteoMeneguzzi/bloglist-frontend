@@ -1,7 +1,10 @@
-import { useState, forwardRef, useImperativeHandle } from 'react';
+/* eslint-disable indent */
+import { useState, forwardRef, useImperativeHandle } from 'react'
+
+import PropTypes from 'prop-types'
 
 const Togglable = forwardRef((props, refs) => {
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(false)
 
   const hideWhenVisible = props.title
     ? {
@@ -13,7 +16,7 @@ const Togglable = forwardRef((props, refs) => {
       }
     : {
         display: visible ? 'none' : '',
-      };
+      }
   const showWhenVisible = props.title
     ? {
         display: visible ? '' : 'none',
@@ -24,13 +27,13 @@ const Togglable = forwardRef((props, refs) => {
       }
     : {
         display: visible ? '' : 'none',
-      };
+      }
 
   useImperativeHandle(refs, () => {
     return {
       setVisible,
-    };
-  });
+    }
+  })
 
   return (
     <div>
@@ -47,7 +50,13 @@ const Togglable = forwardRef((props, refs) => {
         )}
       </div>
     </div>
-  );
-});
+  )
+})
 
-export default Togglable;
+Togglable.displayName = 'Togglable'
+
+export default Togglable
+
+Togglable.propTypes = {
+  buttonLabel: PropTypes.string.isRequired,
+}

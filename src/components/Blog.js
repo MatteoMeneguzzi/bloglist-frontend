@@ -1,18 +1,18 @@
-import Togglable from './Togglable';
-import { useRef } from 'react';
+import Togglable from './Togglable'
+import { useRef } from 'react'
 
 const Blog = ({ blog, updateBlog, deleteBlog, user }) => {
-  const blogDetailRef = useRef();
+  const blogDetailRef = useRef()
 
   const toggleVisibility = () => {
-    blogDetailRef.current.setVisible();
-  };
+    blogDetailRef.current.setVisible()
+  }
 
   const addLike = () => {
-    const newBlog = { ...blog, likes: blog.likes + 1 };
+    const newBlog = { ...blog, likes: blog.likes + 1 }
 
-    updateBlog(newBlog);
-  };
+    updateBlog(newBlog)
+  }
 
   return (
     <Togglable
@@ -27,12 +27,12 @@ const Blog = ({ blog, updateBlog, deleteBlog, user }) => {
       <div>
         likes {blog.likes} <button onClick={addLike}>like</button>
       </div>
-      <div>{blog.user?.name}</div>
-      {user.username === blog.user?.username && (
+      <div>{blog.user && blog.user.name}</div>
+      {blog.user && user.username === blog.user.username && (
         <button onClick={() => deleteBlog(blog)}>remove</button>
       )}
     </Togglable>
-  );
-};
+  )
+}
 
-export default Blog;
+export default Blog
