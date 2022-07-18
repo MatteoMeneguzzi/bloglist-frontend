@@ -1,4 +1,4 @@
-describe('Note app', function () {
+describe('Blog app', function () {
   beforeEach(function () {
     cy.request('POST', 'http://localhost:3003/api/testing/reset');
     const user = {
@@ -45,6 +45,26 @@ describe('Note app', function () {
       );
       cy.get('#create-button').click();
       cy.contains('a blog created by cypress');
+    });
+  });
+
+  describe('Login', function () {
+    it('succeeds with correct credentials', function () {
+      cy.contains('log in').click();
+      cy.get('#username').type('mluukkai');
+      cy.get('#password').type('salainen');
+      cy.get('#login-button').click();
+
+      cy.get('.success').contains('Matti Luukkainen successfully logged in');
+    });
+
+    it('fails with wrong credentials', function () {
+      cy.contains('log in').click();
+      cy.get('#username').type('mluukkai');
+      cy.get('#password').type('mamma');
+      cy.get('#login-button').click();
+
+      cy.get('.error').contains('wrong credentials');
     });
   });
 });
