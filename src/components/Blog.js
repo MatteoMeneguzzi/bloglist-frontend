@@ -1,19 +1,23 @@
-import Togglable from './Togglable'
-import { useRef } from 'react'
+/* eslint-disable indent */
+import Togglable from './Togglable';
+import { useRef } from 'react';
 
 const Blog = ({ blog, updateBlog, deleteBlog, user }) => {
-  const blogDetailRef = useRef()
+  const blogDetailRef = useRef();
 
   const toggleVisibility = () => {
-    blogDetailRef.current.setVisible()
-  }
+    blogDetailRef.current.setVisible();
+  };
 
   const addLike = () => {
-    const newBlog = { ...blog, likes: blog.likes + 1 }
+    const newBlog = { ...blog, likes: blog.likes + 1 };
 
-    updateBlog(newBlog)
-  }
+    updateBlog(newBlog);
+  };
 
+  console.log(user);
+
+  console.log(blog);
   return (
     <div className='blog'>
       <Togglable
@@ -26,15 +30,18 @@ const Blog = ({ blog, updateBlog, deleteBlog, user }) => {
         <button onClick={toggleVisibility}>hide</button>
         <div id='blog-url'>{blog.url}</div>
         <div id='blog-likes'>
-          likes {blog.likes} <button onClick={addLike}>like</button>
+          likes {blog.likes}{' '}
+          <button id='like-button' className='like-button' onClick={addLike}>
+            like
+          </button>
         </div>
-        <div>{blog.user ? blog.user.name : null}</div>
-        {blog.user && user?.username === blog.user.username && (
+        <div>{blog.user?.name}</div>
+        {blog?.user && user?.username === blog?.user.username && (
           <button onClick={() => deleteBlog(blog)}>remove</button>
         )}
       </Togglable>
     </div>
-  )
-}
+  );
+};
 
-export default Blog
+export default Blog;
