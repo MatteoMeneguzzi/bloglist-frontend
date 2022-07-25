@@ -1,3 +1,4 @@
+/* eslint-disable indent */
 import { useState, useEffect, useRef } from 'react';
 import Blog from './components/Blog';
 import BlogForm from './components/BlogForm';
@@ -5,30 +6,40 @@ import blogService from './services/blogs';
 import loginService from './services/login';
 import LoginForm from './components/LoginForm';
 import Togglable from './components/Togglable';
+import { useDispatch, useSelector } from 'react-redux';
+
+import {
+  initializeBlogs,
+  createBlog,
+  updateVote,
+  removeBlog,
+} from './reducers/blogReducer';
+import { setUser } from './reducers/userReducer';
+import { showNotificationWithTimeout } from './reducers/notificationReducer';
 
 const App = () => {
-  const [blogs, setBlogs] = useState([]);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const blogs = useSelector((store) => store.blogs);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
+  const user = useSelector((store) => store.user);
 
   const blogFormRef = useRef();
 
-  useEffect(() => {
-    blogService.getAll().then((blogs) => {
-      const newBlogs = blogs.sort((a, b) => b.likes - a.likes);
+  const dispatch = useDispatch();
 
-      setBlogs(newBlogs);
-    });
-  }, []);
+  const notification = useSelector((store) => store.notification);
+
+  useEffect(() => {
+    dispatch(initializeBlogs());
+  }, [dispatch]);
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser');
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
-      setUser(user);
+
+      dispatch(setUser(user));
       blogService.setToken(user.token);
     }
   }, []);
@@ -42,15 +53,22 @@ const App = () => {
       });
       window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user));
       blogService.setToken(user.token);
-      setUser(user);
+      dispatch(setUser(user));
       setUsername('');
       setPassword('');
-      setSuccessMessage(`${user.name} successfully logged in`);
-      setTimeout(() => setSuccessMessage(''), 3000);
+      dispatch(
+        showNotificationWithTimeout({
+          content: `${user.name} successfully logged in`,
+          timer: 3000,
+        })
+      );
     } catch (error) {
-      console.log(error.message);
-      setErrorMessage('wrong credentials');
-      setTimeout(() => setErrorMessage(''), 3000);
+      dispatch(
+        showNotificationWithTimeout({
+          content: 'wrong credentials',
+          timer: 3000,
+        })
+      );
     }
   };
 
@@ -59,7 +77,7 @@ const App = () => {
     try {
       window.localStorage.removeItem('loggedBlogappUser');
       blogService.setToken('');
-      setUser(null);
+      dispatch(setUser(null));
       setUsername('');
       setPassword('');
     } catch (exception) {
@@ -67,34 +85,30 @@ const App = () => {
     }
   };
 
-  const createBlog = (blog) => {
+  const addBlog = (blog) => {
     blogFormRef.current.setVisible();
-    blogService
-      .create(blog)
-      .then((returnedBlog) => {
-        console.log(returnedBlog);
-        setBlogs(blogs.concat(returnedBlog).sort((a, b) => b.likes - a.likes));
-        setSuccessMessage('a new blog was added');
-        setTimeout(() => setSuccessMessage(''), 3000);
+    dispatch(createBlog(blog))
+      .then(() => {
+        dispatch(
+          showNotificationWithTimeout({
+            content: `a new blog ${blog.title} by ${blog.author} was added`,
+            timer: 3000,
+          })
+        );
       })
       .catch((err) => {
-        setErrorMessage(`${err.response.data.error}`);
-        setTimeout(() => setErrorMessage(''), 3000);
+        dispatch(
+          showNotificationWithTimeout({
+            content: `${err.response.data.error}`,
+            timer: 3000,
+          })
+        );
       });
   };
 
   const updateBlog = (blog) => {
-    blogService
-      .updateLikes(blog.id, blog)
-      .then(() => {
-        const newBlogs = blogs.map((item) =>
-          item.id !== blog.id ? item : blog
-        );
-        console.log(newBlogs);
-
-        const sortedBlogs = newBlogs.sort((a, b) => b.likes - a.likes);
-        setBlogs(sortedBlogs);
-      })
+    dispatch(updateVote(blog))
+      .then()
       .catch((err) => {
         console.log(err.message);
       });
@@ -103,9 +117,7 @@ const App = () => {
   const deleteBlog = (blog) => {
     console.log(blog);
     if (window.confirm(`Do you really want to delete blog ${blog.title}`))
-      blogService.deleteBlog(blog.id);
-    const newBlogs = blogs.filter((item) => item.id !== blog.id);
-    setBlogs(newBlogs);
+      dispatch(removeBlog(blog.id));
   };
   const loginForm = () => {
     return (
@@ -121,48 +133,34 @@ const App = () => {
     );
   };
 
+  console.log(user);
   return (
     <div>
       {user === null ? (
         <>
           <h2>login to application</h2>
-          {errorMessage.length > 2 ? (
-            <p
-              style={{
-                color: 'red',
-                background: 'lightgrey',
-                fontSize: 20,
-                border: 'solid',
-                borderRadius: 5,
-                padding: 10,
-                marginBottom: 10,
-              }}
-              className='error'
-            >
-              {errorMessage}
-            </p>
-          ) : null}
-          {successMessage.length > 2 ? (
-            <p
-              style={{
-                color: 'green',
-                background: 'lightgrey',
-                fontSize: 20,
-                border: 'solid',
-                borderRadius: 5,
-                padding: 10,
-                marginBottom: 10,
-              }}
-              className='success'
-            >
-              {successMessage}
-            </p>
-          ) : null}
+          {notification.content.includes('wrong') &&
+            notification.content.length > 15 && (
+              <p
+                style={{
+                  color: 'red',
+                  background: 'lightgrey',
+                  fontSize: 20,
+                  border: 'solid',
+                  borderRadius: 5,
+                  padding: 10,
+                  marginBottom: 10,
+                }}
+                className='error'
+              >
+                {notification.content}
+              </p>
+            )}
           {loginForm()}
         </>
       ) : (
         <div>
-          {errorMessage.length > 2 ? (
+          {notification.content.includes('validation') ? (
             <p
               style={{
                 color: 'red',
@@ -175,10 +173,11 @@ const App = () => {
               }}
               className='error'
             >
-              {errorMessage}
+              {notification.content}
             </p>
           ) : null}
-          {successMessage.length > 2 ? (
+          {notification.content.includes('added') ||
+          notification.content.includes('logged') ? (
             <p
               style={{
                 color: 'green',
@@ -191,7 +190,7 @@ const App = () => {
               }}
               className='success'
             >
-              {successMessage}
+              {notification.content}
             </p>
           ) : null}
           <p>
@@ -200,7 +199,7 @@ const App = () => {
           </p>
           <Togglable buttonLabel='create new blog' ref={blogFormRef}>
             <h2>create new blog</h2>
-            <BlogForm createBlog={createBlog} blogs={blogs} />
+            <BlogForm createBlog={addBlog} blogs={blogs} />
           </Togglable>
         </div>
       )}

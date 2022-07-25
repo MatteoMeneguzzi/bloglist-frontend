@@ -11,13 +11,11 @@ const Blog = ({ blog, updateBlog, deleteBlog, user }) => {
 
   const addLike = () => {
     const newBlog = { ...blog, likes: blog.likes + 1 };
+    console.log(newBlog);
 
     updateBlog(newBlog);
   };
 
-  console.log(user);
-
-  console.log(blog);
   return (
     <div className='blog'>
       <Togglable
