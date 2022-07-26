@@ -36,12 +36,31 @@ const updateLikes = async (id, newObject) => {
     headers: { Authorization: token },
   };
 
-  const obj = { ...newObject };
-
-  console.log(obj);
-  const response = await axios.put(`${baseUrl}/${id}`, obj, config);
+  const response = await axios.put(`${baseUrl}/${id}`, newObject, config);
   console.log(response);
   return response.data;
 };
 
-export default { getAll, setToken, create, updateLikes, deleteBlog };
+const commentBlog = async (data) => {
+  const config = {
+    headers: { Authorization: token },
+  };
+
+  console.log(data.comment);
+  const response = await axios.post(
+    `${baseUrl}/${data.id}/comments`,
+    data,
+    config
+  );
+  console.log(response);
+  return response.data;
+};
+
+export default {
+  getAll,
+  setToken,
+  create,
+  updateLikes,
+  deleteBlog,
+  commentBlog,
+};

@@ -1,30 +1,26 @@
 /* eslint-disable indent */
-import { useState, useEffect, useRef } from 'react';
-import Blog from './components/Blog';
-import BlogForm from './components/BlogForm';
+import { useState, useEffect } from 'react';
+
 import blogService from './services/blogs';
 import loginService from './services/login';
 import LoginForm from './components/LoginForm';
 import Togglable from './components/Togglable';
 import { useDispatch, useSelector } from 'react-redux';
 
-import {
-  initializeBlogs,
-  createBlog,
-  updateVote,
-  removeBlog,
-} from './reducers/blogReducer';
+import { initializeBlogs } from './reducers/blogReducer';
 import { setUser } from './reducers/userReducer';
 import { showNotificationWithTimeout } from './reducers/notificationReducer';
 
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import BlogList from './components/BlogList';
+import Users from './routes/Users';
+import User from './routes/User';
+import BlogPost from './routes/BlogPost';
+
 const App = () => {
-  const blogs = useSelector((store) => store.blogs);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  // const [user, setUser] = useState(null);
   const user = useSelector((store) => store.user);
-
-  const blogFormRef = useRef();
 
   const dispatch = useDispatch();
 
@@ -85,40 +81,6 @@ const App = () => {
     }
   };
 
-  const addBlog = (blog) => {
-    blogFormRef.current.setVisible();
-    dispatch(createBlog(blog))
-      .then(() => {
-        dispatch(
-          showNotificationWithTimeout({
-            content: `a new blog ${blog.title} by ${blog.author} was added`,
-            timer: 3000,
-          })
-        );
-      })
-      .catch((err) => {
-        dispatch(
-          showNotificationWithTimeout({
-            content: `${err.response.data.error}`,
-            timer: 3000,
-          })
-        );
-      });
-  };
-
-  const updateBlog = (blog) => {
-    dispatch(updateVote(blog))
-      .then()
-      .catch((err) => {
-        console.log(err.message);
-      });
-  };
-
-  const deleteBlog = (blog) => {
-    console.log(blog);
-    if (window.confirm(`Do you really want to delete blog ${blog.title}`))
-      dispatch(removeBlog(blog.id));
-  };
   const loginForm = () => {
     return (
       <Togglable buttonLabel={'log in'}>
@@ -133,9 +95,16 @@ const App = () => {
     );
   };
 
-  console.log(user);
   return (
-    <div>
+    <Router>
+      <div>
+        <Link style={{ padding: 5 }} to='/'>
+          blogs
+        </Link>
+        <Link style={{ padding: 5 }} to='/users'>
+          users
+        </Link>
+      </div>
       {user === null ? (
         <>
           <h2>login to application</h2>
@@ -197,23 +166,17 @@ const App = () => {
             {user.name} logged in{' '}
             <button onClick={handleLogOut}>Log out</button>
           </p>
-          <Togglable buttonLabel='create new blog' ref={blogFormRef}>
-            <h2>create new blog</h2>
-            <BlogForm createBlog={addBlog} blogs={blogs} />
-          </Togglable>
         </div>
       )}
-      <h2>blogs</h2>
-      {blogs.map((blog) => (
-        <Blog
-          key={blog.id}
-          blog={blog}
-          updateBlog={updateBlog}
-          deleteBlog={deleteBlog}
-          user={user}
-        />
-      ))}
-    </div>
+      <h2>Blog App</h2>
+
+      <Routes>
+        <Route path='/blogs/:id' element={<BlogPost />} />
+        <Route path='/users/:id' element={<User />} />
+        <Route path='/' element={<BlogList />} />
+        <Route path='/users' element={<Users />} />
+      </Routes>
+    </Router>
   );
 };
 

@@ -5,11 +5,6 @@ const blogSlice = createSlice({
   name: 'blogs',
   initialState: [],
   reducers: {
-    // createBlog(state, action) {
-    //   state.push(action.payload);
-
-    //   return state.sort((a, b) => b.votes - a.votes);
-    // },
     voteBlog(state, action) {
       const id = action.payload;
       console.log(id);
